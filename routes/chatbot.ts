@@ -17,6 +17,7 @@ import { isString } from 'lodash'
 import { Bot } from 'juicy-chat-bot'
 import validateChatBot from '../lib/startup/validateChatBot'
 import * as security from '../lib/insecurity'
+const { sanitizeHtml } = security
 import * as botUtils from '../lib/botUtils'
 import { challenges } from '../data/datacache'
 
@@ -66,7 +67,7 @@ async function processQuery (user: User, req: Request, res: Response, next: Next
       bot.addUser(`${user.id}`, username)
       res.status(200).json({
         action: 'response',
-        body: bot.greet(`${user.id}`)
+        body: sanitizeHtml(bot.greet(`${user.id}`))
       })
     } catch (err) {
       next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
@@ -87,7 +88,7 @@ async function processQuery (user: User, req: Request, res: Response, next: Next
   if (!req.body.query) {
     res.status(200).json({
       action: 'response',
-      body: bot.greet(`${user.id}`)
+      body: sanitizeHtml(bot.greet(`${user.id}`))
     })
     return
   }
@@ -145,7 +146,7 @@ async function setUserName (user: User, req: Request, res: Response) {
     bot.addUser(`${updatedUser.id}`, req.body.query)
     res.status(200).json({
       action: 'response',
-      body: bot.greet(`${updatedUser.id}`),
+      body: sanitizeHtml(bot.greet(`${updatedUser.id}`)),
       token: updatedToken
     })
   } catch (err) {
@@ -194,7 +195,7 @@ export const status = function status () {
       bot.addUser(`${user.id}`, username)
       res.status(200).json({
         status: bot.training.state,
-        body: bot.training.state ? bot.greet(`${user.id}`) : `${config.get<string>('application.chatBot.name')} isn't ready at the moment, please wait while I set things up`
+        body: bot.training.state ? sanitizeHtml(bot.greet(`${user.id}`)) : `${config.get<string>('application.chatBot.name')} isn't ready at the moment, please wait while I set things up`
       })
     } catch (err) {
       next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
